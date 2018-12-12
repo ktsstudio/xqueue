@@ -36,7 +36,7 @@ require 'xqueue' ( box.space.tasks, {
 		runat  = 'runat';
 	};
 	features = {
-		id = 'time64',
+		id = 'time',
 		delayed = true,
 	};
 	workers = 1;

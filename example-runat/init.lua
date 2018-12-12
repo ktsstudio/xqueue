@@ -44,7 +44,7 @@ xq( box.space.enqueued, {
 		-- runat = 'other';
 	};
 	features = {
-		-- id = 'time64',
+		-- id = 'time',
 		delayed = true,
 		ttr = 10,
 		ttl = true,

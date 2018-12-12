@@ -53,7 +53,7 @@ M.upgrade(space, {
 		proirity = 'proirity_field_name'  | proirity_field_no,
 	},
 	features = {
-		id = 'auto_increment' | 'time64' | 'uuid' | 'required' | function
+		id = 'auto_increment' | 'time' | 'uuid' | 'required' | function
 			-- auto_increment - if pk is number, then use it for auto_increment
 			-- uuid - if pk is string, then use uuid for id
 			-- required - primary key MUST be present in tuple during put

@@ -76,7 +76,7 @@ Status:
 		requires `runat`
 		`delay` may be set during put, release, kick
 		turned into R after delay
-	
+
 	B - buried - task was temporary discarded from queue by consumer
 		may be revived using kick by administrator
 		use it in unpredicted conditions, when man intervention is required
@@ -249,7 +249,7 @@ function M.upgrade(space,opts,depth)
 		self._lock = {}
 		self.take_wait = fiber.channel(0)
 	end
-	
+
 	self.debug = not not opts.debug
 
 	self._on_dis = box.session.on_disconnect(function()
@@ -425,7 +425,7 @@ function M.upgrade(space,opts,depth)
 	if not opts.features.id then
 		opts.features.id = 'uuid'
 	end
-	-- 'auto_increment' | 'time64' | 'uuid' | 'required' | function
+	-- 'auto_increment' | 'time' | 'uuid' | 'required' | function
 	if opts.features.id == 'auto_increment' then
 		if not (#pk.parts == 1 and typeeq( pk.parts[1].type, 'num')) then
 			error("For auto_increment numeric pk is mandatory",2+depth)
@@ -439,13 +439,13 @@ function M.upgrade(space,opts,depth)
 				return 1
 			end
 		end
-	elseif opts.features.id == 'time64' then
+	elseif opts.features.id == 'time' then
 		if not (#pk.parts == 1 and typeeq( pk.parts[1].type, 'num')) then
-			error("For time64 numeric pk is mandatory",2+depth)
+			error("For time numeric pk is mandatory",2+depth)
 		end
 		local clock = require 'clock'
 		gen_id = function()
-			local key = clock.monotonic64()
+			local key = clock.realtime()
 			while true do
 				local exists = pk:get(key)
 				if not exists then
@@ -476,7 +476,7 @@ function M.upgrade(space,opts,depth)
 	elseif type(opts.features.id) == 'function' or (debug.getmetatable(opts.features.id) and debug.getmetatable(opts.features.id).__call) then
 		gen_id = opts.features.id
 	else
-		error(string.format("Wrong type for features.id %s, may be 'auto_increment' | 'time64' | 'uuid' | 'required' | function", opts.features.id ),2+depth)
+		error(string.format("Wrong type for features.id %s, may be 'auto_increment' | 'time' | 'uuid' | 'required' | function", opts.features.id ),2+depth)
 	end
 
 	if not opts.features.retval then
@@ -552,14 +552,14 @@ function M.upgrade(space,opts,depth)
 	self.space = space.id
 
 	function self.timeoffset(delta)
-		-- return clock.monotonic64() + tonumber64(tonumber(delta) * 1e6)
-		return clock.monotonic() + tonumber(delta)
+		-- return clock.realtime64() + tonumber64(tonumber(delta) * 1e6)
+		return clock.realtime() + tonumber(delta)
 	end
 	function self.timeready(time)
-		return time < clock.monotonic()
+		return time < clock.realtime()
 	end
 	function self.timeremaining(time)
-		return time - clock.monotonic()
+		return time - clock.realtime()
 	end
 	-- self.NEVER = -1ULL
 	self.NEVER = 0
@@ -621,7 +621,7 @@ function M.upgrade(space,opts,depth)
 			local collect = {}
 			while space.xq == xq do
 				local r,e = pcall(function()
-					-- print("runat loop 2 ",box.time64())
+					-- print("runat loop 2 ",box.time())
 					local remaining
 					for _,t in runat_index:pairs({0},{iterator = box.index.GT}) do
 
@@ -634,7 +634,7 @@ function M.upgrade(space,opts,depth)
 						end
 						if #collect >= maxrun then remaining = 0 break end
 					end
-					
+
 					for _,t in ipairs(collect) do
 						-- log.info("Runat: %s, %s", _, t)
 						if t[xq.fields.status] == 'W' then
@@ -683,7 +683,7 @@ function M.upgrade(space,opts,depth)
 					end
 					return 1
 				end)
-				
+
 				if r then
 					curwait = e
 				else
@@ -956,7 +956,7 @@ function methods:take(timeout, opts)
 	local r,e = pcall(function()
 		local sid = box.session.id()
 		local peer = box.session.storage.peer
-		
+
 		-- print("Take ",key," for ",peer," sid=",sid, "; fid=",fiber.id() )
 		if xq.debug then
 			log.info("Take {%s} by %s, sid=%s, fid=%s", key, peer, sid, fiber.id())
@@ -1051,9 +1051,9 @@ function methods:release(key, attr)
 		log.info("Rel: %s->%s {%s} +%s from %s/sid=%s/fid=%s", old, t[xq.fields.status],
 			key, attr.delay, box.session.storage.peer, box.session.id(), fiber.id() )
 	end)
-	
+
 	xq:putback(key,attr)
-		
+
 	return t
 end
 

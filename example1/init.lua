@@ -23,7 +23,7 @@ xq( box.space.enqueued, {
 	-- },
 	fields = { status = 'status' };
 	features = {
-		id = 'time64',
+		id = 'time',
 	}
 
 } )
