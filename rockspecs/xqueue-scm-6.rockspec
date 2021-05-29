@@ -2,7 +2,7 @@ package = "xqueue"
 version = "scm-6"
 source = {
    url = "git://github.com/ktsstudio/xqueue.git",
-   branch = "v5-fixes",
+   branch = "kts-v6",
 }
 description = {
    summary = "Package for loading external lua config",
