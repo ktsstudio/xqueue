@@ -1,7 +1,7 @@
 package = "xqueue"
 version = "scm-6"
 source = {
-   url = "git://github.com/ktsstudio/xqueue.git",
+   url = "git+https://github.com/ktsstudio/xqueue.git",
    branch = "kts-v6",
 }
 description = {
