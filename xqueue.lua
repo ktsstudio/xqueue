@@ -863,7 +863,7 @@ function M.upgrade(space,opts,depth)
 						elseif (status == 'R' or status == 'L') and xq.features.ttl then
 							local key = xq:keyfield(t)
 							log.info("Runat: Kill R by ttl %s (%+0.2fs)", key, fiber.time() - t[ xq.fields.runat ])
-							t = space:delete{key}
+							t = space:kill{key}
 							notify_producer(key, t)
 						elseif status == 'Z' and xq.features.zombie then
 							log.info("Runat: Kill Zombie %s",xq:keyfield(t))
@@ -1604,9 +1604,9 @@ function methods:kill(key)
 		log.info("Kill {%s} by %s, sid=%s, fid=%s", key, peer, box.session.id(), fiber.id())
 	end
 
-	self:delete(key)
+	local t = self:delete(key)
 
-	if status == 'T' then
+	if status == 'T' or status == 'R' then
 		for sid in pairs(xq.bysid) do
 			xq.bysid[sid][key] = nil
 		end
@@ -1616,6 +1616,8 @@ function methods:kill(key)
 		if xq.features.lockable and t[ xq.fieldmap.lock ] ~= nil then
 			xq:wakeup_locked_task(task)
 		end
+
+		return t
 	end
 end
 
